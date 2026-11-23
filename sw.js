@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kakeibo-pwa-v1';
+const CACHE_NAME = 'kakeibo-pwa-v2';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -43,7 +43,6 @@ self.addEventListener('fetch', (event) => {
       }
       return fetch(event.request)
         .then((networkResponse) => {
-          // Otomatis simpan pustaka eksternal (Tailwind, Chart.js, Font) ke cache HP
           if (
             networkResponse &&
             networkResponse.status === 200 &&
