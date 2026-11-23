@@ -43,7 +43,6 @@ const DB = {
     }
   },
   initDefaults() {
-    // 1. Inisialisasi Subkategori Awal jika baru pertama kali buka
     if (!localStorage.getItem(STORAGE_KEYS.SUBCATEGORIES)) {
       const now = new Date().toISOString();
       const defaultSubcategories = [
@@ -80,7 +79,6 @@ const DB = {
       this.set(STORAGE_KEYS.SUBCATEGORIES, defaultSubcategories);
     }
 
-    // 2. Inisialisasi Metode Pembayaran Awal
     if (!localStorage.getItem(STORAGE_KEYS.PAYMENT_METHODS)) {
       const now = new Date().toISOString();
       const defaultMethods = [
@@ -94,7 +92,6 @@ const DB = {
       this.set(STORAGE_KEYS.PAYMENT_METHODS, defaultMethods);
     }
 
-    // 3. Inisialisasi Anggaran Default Bulan Ini
     const now = new Date();
     const currMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const configs = this.get(STORAGE_KEYS.CONFIGS, {});
@@ -115,11 +112,10 @@ const DB = {
   }
 };
 
-// Inisialisasi data bawaan saat app pertama dibuka
 DB.initDefaults();
 
 // ==============================================================================
-// 2. STATE MANAGEMENT APLIKASI
+// 2. STATE MANAGEMENT
 // ==============================================================================
 
 const state = {
@@ -227,6 +223,12 @@ function generateId(prefix = 'ID') {
   return prefix + '-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
 }
 
+function refreshIcons() {
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+}
+
 // ==============================================================================
 // 4. INISIALISASI HALAMAN UTAMA
 // ==============================================================================
@@ -253,13 +255,13 @@ function initApp() {
   const txnDateInput = document.getElementById('txnTanggal');
   if (txnDateInput) txnDateInput.value = todayStr;
 
-  // Muat data lokal seketika (0 detik loading!)
   loadSubcategories();
   loadPaymentMethods();
   loadAvailableMonths();
   loadDashboardData();
 
   hideSplashScreen();
+  refreshIcons();
 }
 
 function loadAvailableMonths() {
@@ -337,6 +339,7 @@ function refreshData() {
   else if (state.activeTab === 'refleksi') loadRefleksiData();
   else if (state.activeTab === 'config') loadConfigData();
   showToast('Tampilan dimuat ulang', 'info');
+  refreshIcons();
 }
 
 // ==============================================================================
@@ -372,6 +375,7 @@ function switchTab(tabName) {
   else if (tabName === 'config') loadConfigData();
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  refreshIcons();
 }
 
 // ==============================================================================
@@ -382,7 +386,6 @@ function getLocalConfig(monthStr) {
   const configs = DB.get(STORAGE_KEYS.CONFIGS, {});
   if (configs[monthStr]) return configs[monthStr];
 
-  // Template acuan default
   return {
     bulan: monthStr,
     totalPemasukan: 10000000,
@@ -424,7 +427,6 @@ function loadDashboardData() {
   const availableToSpend = Math.max(0, totalIncome - targetSavings);
   const remainingAvailable = availableToSpend - totalExpense;
 
-  // Render Sisa Uang Belanja
   const elRemaining = document.getElementById('dashRemainingAvailable');
   if (elRemaining) {
     elRemaining.innerText = formatRupiah(remainingAvailable);
@@ -448,7 +450,6 @@ function loadDashboardData() {
     elExpenseRatio.innerText = `${ratio}% dari Uang Belanja`;
   }
 
-  // 4 Pilar Kakeibo Breakdown
   const categories = [
     { key: 'Needs', title: 'Needs', spent: categorySpent.Needs, budget: config.budgetNeeds },
     { key: 'Wants', title: 'Wants', spent: categorySpent.Wants, budget: config.budgetWants },
@@ -467,39 +468,39 @@ function loadDashboardData() {
 
   renderKakeiboCards(categories);
 
-  // Render Charts
   if (typeof Chart !== 'undefined') {
     renderDonutChart(categories);
     renderBarChart(categories);
   }
 
-  // Recent Transactions
   txns.sort((a, b) => b.tanggal.localeCompare(a.tanggal));
   renderRecentTransactions(txns.slice(0, 7));
+  refreshIcons();
 }
 
 function renderKakeiboCards(categories) {
   const container = document.getElementById('kakeiboCardsContainer');
   if (!container) return;
 
+  // Menggunakan Icon Lucide (Bukan Emoji)
   const colorConfig = {
-    Needs: { borderClass: 'card-border-needs', barBg: 'bg-sky-500', icon: '🏠', desc: 'Kebutuhan Pokok' },
-    Wants: { borderClass: 'card-border-wants', barBg: 'bg-purple-600', icon: '☕', desc: 'Keinginan' },
-    Culture: { borderClass: 'card-border-culture', barBg: 'bg-amber-500', icon: '📚', desc: 'Budaya & Wawasan' },
-    Unexpected: { borderClass: 'card-border-unexpected', barBg: 'bg-rose-500', icon: '⚠️', desc: 'Tak Terduga' }
+    Needs: { borderClass: 'card-border-needs', barBg: 'bg-sky-500', lucideIcon: 'home', iconColor: 'text-sky-600 dark:text-sky-400', desc: 'Kebutuhan Pokok' },
+    Wants: { borderClass: 'card-border-wants', barBg: 'bg-purple-600', lucideIcon: 'coffee', iconColor: 'text-purple-600 dark:text-purple-400', desc: 'Keinginan & Gaya Hidup' },
+    Culture: { borderClass: 'card-border-culture', barBg: 'bg-amber-500', lucideIcon: 'book-open', iconColor: 'text-amber-600 dark:text-amber-400', desc: 'Wawasan, Seni & Buku' },
+    Unexpected: { borderClass: 'card-border-unexpected', barBg: 'bg-rose-500', lucideIcon: 'alert-circle', iconColor: 'text-rose-600 dark:text-rose-400', desc: 'Biaya Tak Terduga' }
   };
 
   container.innerHTML = '';
   categories.forEach(cat => {
     const cfg = colorConfig[cat.key] || colorConfig.Needs;
-    let statusBadge = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">Aman</span>`;
+    let statusBadge = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Aman</span>`;
     let barColor = cfg.barBg;
 
     if (cat.status === 'danger') {
-      statusBadge = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 text-rose-700 border border-rose-300 animate-overbudget">Overbudget</span>`;
+      statusBadge = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border border-rose-300 dark:border-rose-800 animate-overbudget">Overbudget</span>`;
       barColor = 'bg-rose-600';
     } else if (cat.status === 'warning') {
-      statusBadge = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-300">Mendekati Batas</span>`;
+      statusBadge = `<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-400 border border-amber-300 dark:border-amber-800">Mendekati Batas</span>`;
       barColor = 'bg-amber-500';
     }
 
@@ -509,35 +510,37 @@ function renderKakeiboCards(categories) {
       <div>
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center space-x-2">
-            <span class="text-xl">${cfg.icon}</span>
+            <div class="p-1.5 rounded-lg bg-stone-100 dark:bg-stone-800 ${cfg.iconColor}">
+              <i data-lucide="${cfg.lucideIcon}" class="w-4 h-4"></i>
+            </div>
             <div>
-              <h4 class="font-extrabold text-sm text-slate-800">${cat.key}</h4>
-              <p class="text-[10px] text-slate-400 font-medium">${cfg.desc}</p>
+              <h4 class="font-extrabold text-sm text-stone-900 dark:text-stone-100">${cat.key}</h4>
+              <p class="text-[10px] text-stone-400 font-medium">${cfg.desc}</p>
             </div>
           </div>
           ${statusBadge}
         </div>
         <div class="mt-3">
           <div class="flex justify-between items-baseline">
-            <span class="text-xs text-slate-500">Terpakai</span>
-            <span class="text-xs text-slate-400">Budget: ${formatRupiah(cat.budget)}</span>
+            <span class="text-xs text-stone-500 dark:text-stone-400">Terpakai</span>
+            <span class="text-xs text-stone-400 dark:text-stone-500">Budget: ${formatRupiah(cat.budget)}</span>
           </div>
-          <div class="text-lg font-black text-slate-900 mt-0.5">${formatRupiah(cat.spent)}</div>
+          <div class="text-lg font-black text-stone-900 dark:text-stone-100 mt-0.5">${formatRupiah(cat.spent)}</div>
         </div>
         <div class="mt-3">
-          <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
-            <div class="${barColor} h-2.5 rounded-full transition-all duration-500" style="width: ${Math.min(cat.percent, 100)}%"></div>
+          <div class="w-full bg-stone-100 dark:bg-stone-800 rounded-full h-2 overflow-hidden">
+            <div class="${barColor} h-2 rounded-full transition-all duration-500" style="width: ${Math.min(cat.percent, 100)}%"></div>
           </div>
-          <div class="flex justify-between items-center text-[11px] font-medium text-slate-500 mt-1.5">
+          <div class="flex justify-between items-center text-[11px] font-medium text-stone-500 dark:text-stone-400 mt-1.5">
             <span>${cat.percent}% terpakai</span>
-            <span>Sisa: <strong class="${cat.remaining < 0 ? 'text-rose-600' : 'text-emerald-600'}">${formatRupiah(cat.remaining)}</strong></span>
+            <span>Sisa: <strong class="${cat.remaining < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}">${formatRupiah(cat.remaining)}</strong></span>
           </div>
         </div>
       </div>
-      <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end">
-        <button onclick="viewCategoryHistory('${cat.key}')" class="text-[11px] font-semibold text-slate-500 hover:text-slate-800 flex items-center space-x-1">
+      <div class="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex justify-end">
+        <button onclick="viewCategoryHistory('${cat.key}')" class="text-[11px] font-semibold text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 flex items-center space-x-1">
           <span>Lihat transaksi</span>
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          <i data-lucide="chevron-right" class="w-3 h-3"></i>
         </button>
       </div>
     `;
@@ -554,11 +557,13 @@ function viewCategoryHistory(categoryKey) {
   }
 }
 
+// Chart.js dengan Palet Zen & Deteksi Mode Gelap
 function renderDonutChart(categories) {
   const canvas = document.getElementById('kakeiboDonutChart');
   const emptyMsg = document.getElementById('donutEmptyMsg');
   if (!canvas) return;
 
+  const isDark = document.documentElement.classList.contains('dark');
   const labels = categories.map(c => c.key);
   const data = categories.map(c => c.spent);
   const total = data.reduce((a, b) => a + b, 0);
@@ -578,16 +583,23 @@ function renderDonutChart(categories) {
       labels: labels,
       datasets: [{
         data: data,
-        backgroundColor: ['#0284c7', '#9333ea', '#d97706', '#e11d48'],
+        backgroundColor: ['#3182CE', '#805AD5', '#D69E2E', '#E53E3E'],
         borderWidth: 2,
-        borderColor: '#ffffff'
+        borderColor: isDark ? '#1C1B1A' : '#FFFFFF'
       }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11, family: 'Plus Jakarta Sans' } } },
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxWidth: 10,
+            color: isDark ? '#ECE9E2' : '#1A1918',
+            font: { size: 11, family: 'Plus Jakarta Sans' }
+          }
+        },
         tooltip: {
           callbacks: {
             label: function(ctx) {
@@ -598,7 +610,7 @@ function renderDonutChart(categories) {
           }
         }
       },
-      cutout: '65%'
+      cutout: '70%'
     }
   });
 }
@@ -608,6 +620,7 @@ function renderBarChart(categories) {
   if (!canvas) return;
   if (state.chartBar) state.chartBar.destroy();
 
+  const isDark = document.documentElement.classList.contains('dark');
   const labels = categories.map(c => c.key);
   const budgets = categories.map(c => c.budget);
   const spents = categories.map(c => c.spent);
@@ -618,15 +631,22 @@ function renderBarChart(categories) {
     data: {
       labels: labels,
       datasets: [
-        { label: 'Anggaran', data: budgets, backgroundColor: '#cbd5e1', borderRadius: 6 },
-        { label: 'Realisasi', data: spents, backgroundColor: ['#0284c7', '#9333ea', '#d97706', '#e11d48'], borderRadius: 6 }
+        { label: 'Anggaran', data: budgets, backgroundColor: isDark ? '#383734' : '#E2E8F0', borderRadius: 6 },
+        { label: 'Realisasi', data: spents, backgroundColor: ['#3182CE', '#805AD5', '#D69E2E', '#E53E3E'], borderRadius: 6 }
       ]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
-        legend: { position: 'top', labels: { boxWidth: 12, font: { size: 11, family: 'Plus Jakarta Sans' } } },
+        legend: {
+          position: 'top',
+          labels: {
+            boxWidth: 10,
+            color: isDark ? '#ECE9E2' : '#1A1918',
+            font: { size: 11, family: 'Plus Jakarta Sans' }
+          }
+        },
         tooltip: {
           callbacks: {
             label: function(ctx) { return ` ${ctx.dataset.label}: ${formatRupiah(ctx.parsed.y)}`; }
@@ -637,6 +657,7 @@ function renderBarChart(categories) {
         y: {
           beginAtZero: true,
           ticks: {
+            color: isDark ? '#9E9B93' : '#73716B',
             callback: function(val) {
               if (val >= 1000000) return (val / 1000000) + ' Jt';
               if (val >= 1000) return (val / 1000) + ' Rb';
@@ -644,9 +665,15 @@ function renderBarChart(categories) {
             },
             font: { size: 10 }
           },
-          grid: { color: '#f1f5f9' }
+          grid: { color: isDark ? '#2D2C2A' : '#F2EFEB' }
         },
-        x: { grid: { display: false }, ticks: { font: { size: 11, weight: 'bold' } } }
+        x: {
+          grid: { display: false },
+          ticks: {
+            color: isDark ? '#ECE9E2' : '#1A1918',
+            font: { size: 11, weight: 'bold' }
+          }
+        }
       }
     }
   });
@@ -658,26 +685,26 @@ function renderRecentTransactions(transactions) {
 
   tbody.innerHTML = '';
   if (!transactions || transactions.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-400">Belum ada transaksi di bulan ini.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-stone-400">Belum ada transaksi di bulan ini.</td></tr>`;
     return;
   }
 
   transactions.forEach(t => {
     const tr = document.createElement('tr');
-    tr.className = 'hover:bg-slate-50 transition';
+    tr.className = 'hover:bg-stone-50 dark:hover:bg-stone-800/40 transition';
     const isIncome = t.jenis === 'Pemasukan';
     const badgeClass = isIncome ? 'badge-pemasukan' : `badge-${t.kategori.toLowerCase()}`;
-    const nominalColor = isIncome ? 'text-emerald-600 font-bold' : 'text-slate-900 font-bold';
+    const nominalColor = isIncome ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-stone-900 dark:text-stone-100 font-bold';
     const prefix = isIncome ? '+' : '-';
 
     tr.innerHTML = `
-      <td class="py-2.5 px-3 text-slate-500 whitespace-nowrap">${formatDateIndo(t.tanggal)}</td>
+      <td class="py-2.5 px-3 text-stone-500 dark:text-stone-400 whitespace-nowrap">${formatDateIndo(t.tanggal)}</td>
       <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${badgeClass}">${t.kategori}</span></td>
       <td class="py-2.5 px-3">
-        <div class="font-semibold text-slate-800">${escapeHtml(t.subkategori)}</div>
-        <div class="text-[11px] text-slate-400 truncate max-w-xs">${escapeHtml(t.catatan || '-')}</div>
+        <div class="font-semibold text-stone-800 dark:text-stone-200">${escapeHtml(t.subkategori)}</div>
+        <div class="text-[11px] text-stone-400 truncate max-w-xs">${escapeHtml(t.catatan || '-')}</div>
       </td>
-      <td class="py-2.5 px-3 text-slate-500">${escapeHtml(t.metode)}</td>
+      <td class="py-2.5 px-3 text-stone-500 dark:text-stone-400">${escapeHtml(t.metode)}</td>
       <td class="py-2.5 px-3 text-right ${nominalColor} whitespace-nowrap">${prefix} ${formatRupiah(t.nominal)}</td>
     `;
     tbody.appendChild(tr);
@@ -698,13 +725,13 @@ function setTransactionType(type) {
   inputJenis.value = type;
 
   if (type === 'Pengeluaran') {
-    btnExpense.className = 'py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 bg-white text-rose-600 shadow-sm';
-    btnIncome.className = 'py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 text-slate-500 hover:text-slate-800';
+    btnExpense.className = 'py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 bg-white dark:bg-stone-700 text-rose-600 dark:text-rose-400 shadow-2xs';
+    btnIncome.className = 'py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200';
     if (secCategory) secCategory.classList.remove('hidden');
     selectCategory('Needs');
   } else {
-    btnIncome.className = 'py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 bg-white text-emerald-600 shadow-sm';
-    btnExpense.className = 'py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 text-slate-500 hover:text-slate-800';
+    btnIncome.className = 'py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 bg-white dark:bg-stone-700 text-emerald-600 dark:text-emerald-400 shadow-2xs';
+    btnExpense.className = 'py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200';
     if (secCategory) secCategory.classList.add('hidden');
     selectCategory('Pemasukan');
   }
@@ -718,12 +745,12 @@ function selectCategory(catName) {
     const btn = document.getElementById('catBtn-' + c);
     if (!btn) return;
     if (c === catName) {
-      if (c === 'Needs') btn.className = 'p-3 border-2 rounded-xl text-center transition flex flex-col items-center justify-center border-sky-500 bg-sky-50 text-sky-800';
-      if (c === 'Wants') btn.className = 'p-3 border-2 rounded-xl text-center transition flex flex-col items-center justify-center border-purple-500 bg-purple-50 text-purple-800';
-      if (c === 'Culture') btn.className = 'p-3 border-2 rounded-xl text-center transition flex flex-col items-center justify-center border-amber-500 bg-amber-50 text-amber-800';
-      if (c === 'Unexpected') btn.className = 'p-3 border-2 rounded-xl text-center transition flex flex-col items-center justify-center border-rose-500 bg-rose-50 text-rose-800';
+      if (c === 'Needs') btn.className = 'p-3 border-2 rounded-xl text-center transition border-sky-500 bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300';
+      if (c === 'Wants') btn.className = 'p-3 border-2 rounded-xl text-center transition border-purple-500 bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300';
+      if (c === 'Culture') btn.className = 'p-3 border-2 rounded-xl text-center transition border-amber-500 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300';
+      if (c === 'Unexpected') btn.className = 'p-3 border-2 rounded-xl text-center transition border-rose-500 bg-rose-50 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300';
     } else {
-      btn.className = 'p-3 border-2 rounded-xl text-center transition flex flex-col items-center justify-center border-slate-200 hover:border-slate-300 bg-white text-slate-700';
+      btn.className = 'p-3 border-2 rounded-xl text-center transition border-stone-200 dark:border-stone-700 hover:border-stone-300 dark:hover:border-stone-600 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300';
     }
   });
 
@@ -788,7 +815,7 @@ function updateNominalPreview(val) {
     preview.innerText = 'Rp 0';
     return;
   }
-  preview.innerHTML = `<strong>${formatRupiah(num)}</strong> <span class="text-slate-400">(${terbilang(num)})</span>`;
+  preview.innerHTML = `<strong>${formatRupiah(num)}</strong> <span class="text-stone-400">(${terbilang(num)})</span>`;
 }
 
 function addQuickNominal(amount) {
@@ -856,7 +883,7 @@ function handleSaveTransaction(e) {
 }
 
 // ==============================================================================
-// 8. KELOLA SUBKATEGORI (CRUD LOKAL)
+// 8. KELOLA SUBKATEGORI (CRUD)
 // ==============================================================================
 
 function loadSubcategories() {
@@ -885,6 +912,7 @@ function openSubcategoryManager(defaultCategory = '') {
   }
   const modal = document.getElementById('subcategoryModal');
   if (modal) modal.classList.remove('hidden');
+  refreshIcons();
 }
 
 function closeSubcategoryManager() {
@@ -907,8 +935,8 @@ function filterModalSubcategories(catKey) {
     const btn = document.getElementById('subFilterTab-' + k);
     if (!btn) return;
     btn.className = (k === catKey)
-      ? 'sub-filter-btn px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-900 text-white shadow-sm'
-      : 'sub-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200';
+      ? 'sub-filter-btn px-2.5 py-1 text-[11px] font-bold rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 shadow-2xs'
+      : 'sub-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:bg-stone-200 dark:hover:bg-stone-700';
   });
 
   const sel = document.getElementById('subKategoriSelect');
@@ -918,7 +946,6 @@ function filterModalSubcategories(catKey) {
 
 function renderSubcategoriesTable(filterCategory = 'Semua') {
   const tbody = document.getElementById('subTableBody');
-  const countBadge = document.getElementById('subCountBadge');
   if (!tbody) return;
 
   let list = state.subcategories || [];
@@ -926,42 +953,42 @@ function renderSubcategoriesTable(filterCategory = 'Semua') {
     list = list.filter(item => item.kategori === filterCategory);
   }
 
-  if (countBadge) countBadge.innerText = `${list.length} Subkategori`;
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400">Belum ada subkategori pada kategori ini.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-stone-400">Belum ada subkategori pada kategori ini.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = '';
   list.forEach(item => {
-    let catBadge = 'bg-slate-100 text-slate-700';
-    if (item.kategori === 'Needs') catBadge = 'bg-sky-50 text-sky-700 border border-sky-200';
-    else if (item.kategori === 'Wants') catBadge = 'bg-purple-50 text-purple-700 border border-purple-200';
-    else if (item.kategori === 'Culture') catBadge = 'bg-amber-50 text-amber-700 border border-amber-200';
-    else if (item.kategori === 'Unexpected') catBadge = 'bg-rose-50 text-rose-700 border border-rose-200';
-    else if (item.kategori === 'Pemasukan') catBadge = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+    let catBadge = 'bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300';
+    if (item.kategori === 'Needs') catBadge = 'badge-needs';
+    else if (item.kategori === 'Wants') catBadge = 'badge-wants';
+    else if (item.kategori === 'Culture') catBadge = 'badge-culture';
+    else if (item.kategori === 'Unexpected') catBadge = 'badge-unexpected';
+    else if (item.kategori === 'Pemasukan') catBadge = 'badge-pemasukan';
 
     const statusBadge = item.status === 'Aktif'
-      ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>`
-      : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">Nonaktif</span>`;
+      ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Aktif</span>`
+      : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 dark:bg-stone-800 text-stone-500">Nonaktif</span>`;
 
     const tr = document.createElement('tr');
-    tr.className = 'hover:bg-slate-50 transition';
+    tr.className = 'hover:bg-stone-50 dark:hover:bg-stone-800/40 transition';
     tr.innerHTML = `
       <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${catBadge}">${escapeHtml(item.kategori)}</span></td>
-      <td class="py-2.5 px-3 font-semibold text-slate-800">${escapeHtml(item.nama)}</td>
+      <td class="py-2.5 px-3 font-semibold text-stone-800 dark:text-stone-200">${escapeHtml(item.nama)}</td>
       <td class="py-2.5 px-3">${statusBadge}</td>
       <td class="py-2.5 px-3 text-center whitespace-nowrap">
-        <button type="button" onclick="editSubcategory('${item.id}')" class="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg mr-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        <button type="button" onclick="editSubcategory('${item.id}')" class="p-1.5 text-stone-500 hover:text-emerald-600 rounded-lg mr-1">
+          <i data-lucide="edit-3" class="w-4 h-4"></i>
         </button>
-        <button type="button" onclick="confirmDeleteSubcategory('${item.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        <button type="button" onclick="confirmDeleteSubcategory('${item.id}')" class="p-1.5 text-stone-500 hover:text-rose-600 rounded-lg">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
         </button>
       </td>
     `;
     tbody.appendChild(tr);
   });
+  refreshIcons();
 }
 
 function editSubcategory(subId) {
@@ -1022,24 +1049,24 @@ function renderSubcategoriesSummary() {
   if (!container) return;
 
   const categories = [
-    { key: 'Needs', title: 'Needs', badge: 'bg-sky-50 text-sky-800 border-sky-200' },
-    { key: 'Wants', title: 'Wants', badge: 'bg-purple-50 text-purple-800 border-purple-200' },
-    { key: 'Culture', title: 'Culture', badge: 'bg-amber-50 text-amber-800 border-amber-200' },
-    { key: 'Unexpected', title: 'Unexpected', badge: 'bg-rose-50 text-rose-800 border-rose-200' },
-    { key: 'Pemasukan', title: 'Pemasukan', badge: 'bg-emerald-50 text-emerald-800 border-emerald-200' }
+    { key: 'Needs', title: 'Needs', badge: 'badge-needs' },
+    { key: 'Wants', title: 'Wants', badge: 'badge-wants' },
+    { key: 'Culture', title: 'Culture', badge: 'badge-culture' },
+    { key: 'Unexpected', title: 'Unexpected', badge: 'badge-unexpected' },
+    { key: 'Pemasukan', title: 'Pemasukan', badge: 'badge-pemasukan' }
   ];
 
   container.innerHTML = categories.map(cat => {
     const items = (state.subcategories || []).filter(s => s.kategori === cat.key && s.status === 'Aktif');
     const chips = items.length > 0
-      ? items.map(s => `<span class="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white border border-slate-200 text-slate-700">${escapeHtml(s.nama)}</span>`).join('')
-      : `<span class="text-xs text-slate-400 italic">Belum ada subkategori aktif.</span>`;
+      ? items.map(s => `<span class="px-2 py-0.5 text-[11px] font-medium rounded-md bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300">${escapeHtml(s.nama)}</span>`).join('')
+      : `<span class="text-xs text-stone-400 italic">Belum ada subkategori aktif.</span>`;
 
     return `
-      <div class="p-3 bg-slate-50 rounded-xl border border-slate-200">
+      <div class="p-3 bg-stone-50 dark:bg-stone-800/40 rounded-xl border border-stone-200 dark:border-stone-700">
         <div class="flex items-center justify-between mb-2">
           <span class="text-xs font-bold ${cat.badge} px-2 py-0.5 rounded-lg border">${cat.title}</span>
-          <button type="button" onclick="openSubcategoryManager('${cat.key}')" class="text-[11px] font-semibold text-emerald-600 hover:text-emerald-700">+ Kelola</button>
+          <button type="button" onclick="openSubcategoryManager('${cat.key}')" class="text-[11px] font-semibold text-stone-700 dark:text-stone-300 hover:underline">+ Kelola</button>
         </div>
         <div class="flex flex-wrap gap-1.5">${chips}</div>
       </div>
@@ -1048,7 +1075,7 @@ function renderSubcategoriesSummary() {
 }
 
 // ==============================================================================
-// 9. METODE PEMBAYARAN CONTROLLER (LOKAL)
+// 9. METODE PEMBAYARAN CONTROLLER
 // ==============================================================================
 
 function loadPaymentMethods() {
@@ -1079,11 +1106,11 @@ function renderPaymentMethodsSummary() {
 
   const active = (state.paymentMethods || []).filter(m => m.status === 'Aktif');
   if (active.length === 0) {
-    container.innerHTML = `<span class="text-xs text-slate-400 italic">Belum ada metode pembayaran.</span>`;
+    container.innerHTML = `<span class="text-xs text-stone-400 italic">Belum ada metode pembayaran.</span>`;
     return;
   }
   container.innerHTML = active.map(m => `
-    <span class="px-2.5 py-1 text-xs font-semibold rounded-lg border bg-slate-100 text-slate-700 border-slate-200 flex items-center space-x-1">
+    <span class="px-2.5 py-1 text-xs font-semibold rounded-lg border bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-700 flex items-center space-x-1">
       <span>${escapeHtml(m.nama)}</span>
       <span class="text-[10px] opacity-60">(${escapeHtml(m.kategori)})</span>
     </span>
@@ -1094,6 +1121,7 @@ function openPaymentMethodManager() {
   resetPaymentMethodForm();
   renderPaymentMethodsTable();
   document.getElementById('paymentMethodModal').classList.remove('hidden');
+  refreshIcons();
 }
 
 function closePaymentMethodManager() {
@@ -1165,44 +1193,42 @@ function confirmDeletePaymentMethod(pmId) {
 
 function renderPaymentMethodsTable() {
   const tbody = document.getElementById('pmTableBody');
-  const countBadge = document.getElementById('pmCountBadge');
   if (!tbody) return;
 
   const list = state.paymentMethods || [];
-  if (countBadge) countBadge.innerText = `${list.length} Metode`;
-
   if (list.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400">Belum ada metode terdaftar.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-stone-400">Belum ada metode terdaftar.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = '';
   list.forEach(m => {
     const statusBadge = m.status === 'Aktif'
-      ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Aktif</span>`
-      : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">Nonaktif</span>`;
+      ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Aktif</span>`
+      : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-stone-100 dark:bg-stone-800 text-stone-500">Nonaktif</span>`;
 
     const tr = document.createElement('tr');
-    tr.className = 'hover:bg-slate-50 transition';
+    tr.className = 'hover:bg-stone-50 dark:hover:bg-stone-800/40 transition';
     tr.innerHTML = `
-      <td class="py-2.5 px-3 font-bold text-slate-800">${escapeHtml(m.nama)}</td>
-      <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-100 text-slate-700">${escapeHtml(m.kategori)}</span></td>
+      <td class="py-2.5 px-3 font-bold text-stone-800 dark:text-stone-200">${escapeHtml(m.nama)}</td>
+      <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">${escapeHtml(m.kategori)}</span></td>
       <td class="py-2.5 px-3">${statusBadge}</td>
       <td class="py-2.5 px-3 text-center whitespace-nowrap">
-        <button type="button" onclick="editPaymentMethod('${m.id}')" class="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg mr-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+        <button type="button" onclick="editPaymentMethod('${m.id}')" class="p-1.5 text-stone-500 hover:text-emerald-600 rounded-lg mr-1">
+          <i data-lucide="edit-3" class="w-4 h-4"></i>
         </button>
-        <button type="button" onclick="confirmDeletePaymentMethod('${m.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        <button type="button" onclick="confirmDeletePaymentMethod('${m.id}')" class="p-1.5 text-stone-500 hover:text-rose-600 rounded-lg">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
         </button>
       </td>
     `;
     tbody.appendChild(tr);
   });
+  refreshIcons();
 }
 
 // ==============================================================================
-// 10. RIWAYAT TRANSAKSI (TABLE, FILTER, SEARCH, EDIT, DELETE)
+// 10. RIWAYAT TRANSAKSI
 // ==============================================================================
 
 function loadHistoryData() {
@@ -1273,30 +1299,29 @@ function renderHistoryUI(transactions) {
   }
   if (emptyState) emptyState.classList.add('hidden');
 
-  // Desktop Table
   if (tbody) {
     tbody.innerHTML = '';
     transactions.forEach(t => {
       const isIncome = t.jenis === 'Pemasukan';
       const badgeClass = isIncome ? 'badge-pemasukan' : `badge-${t.kategori.toLowerCase()}`;
       const prefix = isIncome ? '+' : '-';
-      const nomColor = isIncome ? 'text-emerald-600 font-bold' : 'text-slate-900 font-bold';
+      const nomColor = isIncome ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-stone-900 dark:text-stone-100 font-bold';
 
       const tr = document.createElement('tr');
-      tr.className = 'hover:bg-slate-50 transition';
+      tr.className = 'hover:bg-stone-50 dark:hover:bg-stone-800/40 transition';
       tr.innerHTML = `
-        <td class="py-3 px-4 text-slate-500 whitespace-nowrap">${formatDateIndo(t.tanggal)}</td>
+        <td class="py-3 px-4 text-stone-500 dark:text-stone-400 whitespace-nowrap">${formatDateIndo(t.tanggal)}</td>
         <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${badgeClass}">${t.kategori}</span></td>
-        <td class="py-3 px-4 font-semibold text-slate-800">${escapeHtml(t.subkategori)}</td>
-        <td class="py-3 px-4 text-slate-500 max-w-xs truncate">${escapeHtml(t.catatan || '-')}</td>
-        <td class="py-3 px-4 text-slate-500">${escapeHtml(t.metode)}</td>
+        <td class="py-3 px-4 font-semibold text-stone-800 dark:text-stone-200">${escapeHtml(t.subkategori)}</td>
+        <td class="py-3 px-4 text-stone-500 dark:text-stone-400 max-w-xs truncate">${escapeHtml(t.catatan || '-')}</td>
+        <td class="py-3 px-4 text-stone-500 dark:text-stone-400">${escapeHtml(t.metode)}</td>
         <td class="py-3 px-4 text-right ${nomColor} whitespace-nowrap">${prefix} ${formatRupiah(t.nominal)}</td>
         <td class="py-3 px-4 text-center whitespace-nowrap">
-          <button onclick="openEditModal('${t.id}')" class="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg mr-1">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          <button onclick="openEditModal('${t.id}')" class="p-1.5 text-stone-500 hover:text-emerald-600 rounded-lg mr-1">
+            <i data-lucide="edit-3" class="w-4 h-4"></i>
           </button>
-          <button onclick="confirmDeleteTransaction('${t.id}')" class="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          <button onclick="confirmDeleteTransaction('${t.id}')" class="p-1.5 text-stone-500 hover:text-rose-600 rounded-lg">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
           </button>
         </td>
       `;
@@ -1304,7 +1329,6 @@ function renderHistoryUI(transactions) {
     });
   }
 
-  // Mobile Cards
   if (mobileContainer) {
     mobileContainer.innerHTML = '';
     transactions.forEach(t => {
@@ -1312,29 +1336,29 @@ function renderHistoryUI(transactions) {
       const badgeClass = isIncome ? 'badge-pemasukan' : `badge-${t.kategori.toLowerCase()}`;
       const borderClass = isIncome ? 'card-border-pemasukan' : `card-border-${t.kategori.toLowerCase()}`;
       const prefix = isIncome ? '+' : '-';
-      const nomColor = isIncome ? 'text-emerald-600 font-bold' : 'text-slate-900 font-bold';
+      const nomColor = isIncome ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-stone-900 dark:text-stone-100 font-bold';
 
       const card = document.createElement('div');
-      card.className = `p-4 bg-white ${borderClass} hover:bg-slate-50 transition`;
+      card.className = `p-4 bg-white dark:bg-stone-900 ${borderClass} hover:bg-stone-50 dark:hover:bg-stone-800/40 transition`;
       card.innerHTML = `
         <div class="flex items-start justify-between">
           <div>
             <div class="flex items-center space-x-2">
               <span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${t.kategori}</span>
-              <span class="text-xs text-slate-400">${formatDateIndo(t.tanggal)}</span>
+              <span class="text-xs text-stone-400">${formatDateIndo(t.tanggal)}</span>
             </div>
-            <h5 class="font-bold text-sm text-slate-900 mt-1">${escapeHtml(t.subkategori)}</h5>
-            <p class="text-xs text-slate-500 mt-0.5">${escapeHtml(t.catatan || '-')}</p>
-            <div class="text-[11px] text-slate-400 mt-1 flex items-center space-x-1">
+            <h5 class="font-bold text-sm text-stone-900 dark:text-stone-100 mt-1">${escapeHtml(t.subkategori)}</h5>
+            <p class="text-xs text-stone-500 dark:text-stone-400 mt-0.5">${escapeHtml(t.catatan || '-')}</p>
+            <div class="text-[11px] text-stone-400 mt-1 flex items-center space-x-1">
               <span>Metode:</span>
-              <span class="font-medium text-slate-600">${escapeHtml(t.metode)}</span>
+              <span class="font-medium text-stone-600 dark:text-stone-300">${escapeHtml(t.metode)}</span>
             </div>
           </div>
           <div class="text-right">
             <div class="text-base ${nomColor}">${prefix} ${formatRupiah(t.nominal)}</div>
             <div class="flex items-center justify-end space-x-1 mt-3">
-              <button onclick="openEditModal('${t.id}')" class="px-2.5 py-1 text-xs text-slate-600 bg-slate-100 rounded-lg">Edit</button>
-              <button onclick="confirmDeleteTransaction('${t.id}')" class="px-2.5 py-1 text-xs text-rose-600 bg-rose-50 rounded-lg">Hapus</button>
+              <button onclick="openEditModal('${t.id}')" class="px-2.5 py-1 text-xs text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 rounded-lg">Edit</button>
+              <button onclick="confirmDeleteTransaction('${t.id}')" class="px-2.5 py-1 text-xs text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 rounded-lg">Hapus</button>
             </div>
           </div>
         </div>
@@ -1342,6 +1366,7 @@ function renderHistoryUI(transactions) {
       mobileContainer.appendChild(card);
     });
   }
+  refreshIcons();
 }
 
 function openEditModal(txnId) {
@@ -1360,6 +1385,7 @@ function openEditModal(txnId) {
 
   updateEditSubcategoryOptions(txn.kategori, txn.subkategori);
   document.getElementById('editModal').classList.remove('hidden');
+  refreshIcons();
 }
 
 function updateEditSubcategoryOptions(categoryKey, selectedVal = '') {
@@ -1478,7 +1504,7 @@ function confirmDeleteTransaction(txnId) {
 }
 
 // ==============================================================================
-// 11. REFLEKSI KAKEIBO (LOKAL)
+// 11. REFLEKSI KAKEIBO
 // ==============================================================================
 
 function loadRefleksiData() {
@@ -1496,6 +1522,7 @@ function loadRefleksiData() {
   document.getElementById('refCatatanTambahan').value = currentRef ? currentRef.catatanTambahan || '' : '';
 
   renderPastReflections(list);
+  refreshIcons();
 }
 
 function handleSaveRefleksi(e) {
@@ -1539,36 +1566,36 @@ function renderPastReflections(reflections) {
 
   container.innerHTML = '';
   if (!reflections || reflections.length === 0) {
-    container.innerHTML = `<p class="text-xs text-slate-400 italic">Belum ada arsip refleksi Kakeibo.</p>`;
+    container.innerHTML = `<p class="text-xs text-stone-400 italic">Belum ada arsip refleksi Kakeibo.</p>`;
     return;
   }
 
   reflections.forEach(ref => {
     const card = document.createElement('div');
-    card.className = 'k-card p-5 bg-white border-l-4 border-l-emerald-500 space-y-3';
+    card.className = 'k-card p-5 border-l-4 border-l-emerald-600 space-y-3';
     card.innerHTML = `
-      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+      <div class="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-stone-800">
         <div class="flex items-center space-x-2">
-          <span class="text-base font-extrabold text-slate-900">Bulan: ${formatMonthIndo(ref.bulan)}</span>
-          <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700">${ref.periodeTipe || 'Bulanan'}</span>
+          <span class="text-base font-bold text-stone-900 dark:text-stone-100">Bulan: ${formatMonthIndo(ref.bulan)}</span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400">${ref.periodeTipe || 'Bulanan'}</span>
         </div>
         <div class="flex items-center space-x-1">
-          <button type="button" onclick="editRefleksi('${ref.id}')" class="px-2.5 py-1 text-xs text-slate-600 bg-slate-100 rounded-lg">Edit</button>
-          <button type="button" onclick="confirmDeleteRefleksi('${ref.id}')" class="px-2.5 py-1 text-xs text-rose-600 bg-rose-50 rounded-lg">Hapus</button>
+          <button type="button" onclick="editRefleksi('${ref.id}')" class="px-2.5 py-1 text-xs text-stone-600 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 rounded-lg">Edit</button>
+          <button type="button" onclick="confirmDeleteRefleksi('${ref.id}')" class="px-2.5 py-1 text-xs text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 rounded-lg">Hapus</button>
         </div>
       </div>
       <div class="space-y-2 text-xs">
         <div>
-          <span class="font-bold text-emerald-800">1. Hal Baik:</span>
-          <p class="text-slate-700 pl-4 bg-emerald-50/50 p-2 rounded-lg mt-0.5">${escapeHtml(ref.yangBerjalanBaik || '-')}</p>
+          <span class="font-bold text-emerald-800 dark:text-emerald-400">1. Hal Baik:</span>
+          <p class="text-stone-700 dark:text-stone-300 pl-4 bg-emerald-50/50 dark:bg-emerald-950/20 p-2.5 rounded-lg mt-0.5">${escapeHtml(ref.yangBerjalanBaik || '-')}</p>
         </div>
         <div>
-          <span class="font-bold text-rose-800">2. Pos Boros:</span>
-          <p class="text-slate-700 pl-4 bg-rose-50/50 p-2 rounded-lg mt-0.5">${escapeHtml(ref.posYangBoros || '-')}</p>
+          <span class="font-bold text-rose-800 dark:text-rose-400">2. Pos Boros:</span>
+          <p class="text-stone-700 dark:text-stone-300 pl-4 bg-rose-50/50 dark:bg-rose-950/20 p-2.5 rounded-lg mt-0.5">${escapeHtml(ref.posYangBoros || '-')}</p>
         </div>
         <div>
-          <span class="font-bold text-sky-800">3. Rencana Perbaikan:</span>
-          <p class="text-slate-700 pl-4 bg-sky-50/50 p-2 rounded-lg mt-0.5">${escapeHtml(ref.rencanaPerbaikan || '-')}</p>
+          <span class="font-bold text-sky-800 dark:text-sky-400">3. Rencana Perbaikan:</span>
+          <p class="text-stone-700 dark:text-stone-300 pl-4 bg-sky-50/50 dark:bg-sky-950/20 p-2.5 rounded-lg mt-0.5">${escapeHtml(ref.rencanaPerbaikan || '-')}</p>
         </div>
       </div>
     `;
@@ -1622,6 +1649,7 @@ function loadConfigData() {
   recalcConfigBalance();
   renderPaymentMethodsSummary();
   renderSubcategoriesSummary();
+  refreshIcons();
 }
 
 function recalcConfigBalance() {
@@ -1644,10 +1672,10 @@ function recalcConfigBalance() {
   const alertBox = document.getElementById('cfgBalanceAlert');
   if (alertBox) {
     if (totalBudget > availableSpend) {
-      alertBox.className = 'p-3 rounded-xl text-xs flex items-center justify-between bg-rose-50 text-rose-700 border border-rose-200';
+      alertBox.className = 'p-3 rounded-xl text-xs flex items-center justify-between bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800';
       alertBox.innerHTML = `<div><strong>Peringatan:</strong> Alokasi melebihi uang belanja sebesar ${formatRupiah(totalBudget - availableSpend)}!</div><strong class="text-sm">${formatRupiah(totalBudget)}</strong>`;
     } else {
-      alertBox.className = 'p-3 rounded-xl text-xs flex items-center justify-between bg-emerald-50 text-emerald-800 border border-emerald-200';
+      alertBox.className = 'p-3 rounded-xl text-xs flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
       alertBox.innerHTML = `<div><strong>Seimbang:</strong> Sisa alokasi bebas: ${formatRupiah(availableSpend - totalBudget)}.</div><strong class="text-sm">${formatRupiah(totalBudget)}</strong>`;
     }
   }
@@ -1682,13 +1710,13 @@ function handleSaveConfig(e) {
 }
 
 // ==============================================================================
-// 13. FITUR BACKUP (UNDUH JSON) & RESTORE DATA (PULIHKAN CADANGAN)
+// 13. CADANGAN (BACKUP) & PEMULIHAN DATA
 // ==============================================================================
 
 function exportBackupData() {
   const backup = {
     app: 'Kakeibo PWA',
-    version: '1.0',
+    version: '2.0',
     exportDate: new Date().toISOString(),
     transactions: DB.get(STORAGE_KEYS.TRANSACTIONS, []),
     configs: DB.get(STORAGE_KEYS.CONFIGS, {}),
