@@ -482,7 +482,6 @@ function renderKakeiboCards(categories) {
   const container = document.getElementById('kakeiboCardsContainer');
   if (!container) return;
 
-  // Menggunakan Icon Lucide (Bukan Emoji)
   const colorConfig = {
     Needs: { borderClass: 'card-border-needs', barBg: 'bg-sky-500', lucideIcon: 'home', iconColor: 'text-sky-600 dark:text-sky-400', desc: 'Kebutuhan Pokok' },
     Wants: { borderClass: 'card-border-wants', barBg: 'bg-purple-600', lucideIcon: 'coffee', iconColor: 'text-purple-600 dark:text-purple-400', desc: 'Keinginan & Gaya Hidup' },
@@ -557,7 +556,6 @@ function viewCategoryHistory(categoryKey) {
   }
 }
 
-// Chart.js dengan Palet Zen & Deteksi Mode Gelap
 function renderDonutChart(categories) {
   const canvas = document.getElementById('kakeiboDonutChart');
   const emptyMsg = document.getElementById('donutEmptyMsg');
@@ -1672,11 +1670,35 @@ function recalcConfigBalance() {
   const alertBox = document.getElementById('cfgBalanceAlert');
   if (alertBox) {
     if (totalBudget > availableSpend) {
-      alertBox.className = 'p-3 rounded-xl text-xs flex items-center justify-between bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800';
-      alertBox.innerHTML = `<div><strong>Peringatan:</strong> Alokasi melebihi uang belanja sebesar ${formatRupiah(totalBudget - availableSpend)}!</div><strong class="text-sm">${formatRupiah(totalBudget)}</strong>`;
+      alertBox.className = 'p-3.5 rounded-xl text-xs bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 space-y-2';
+      alertBox.innerHTML = `
+        <div class="flex items-center justify-between font-bold">
+          <span class="flex items-center space-x-1.5">
+            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+            <span>Melebihi Uang Belanja</span>
+          </span>
+          <span class="text-sm font-black text-rose-600 dark:text-rose-400">${formatRupiah(totalBudget)}</span>
+        </div>
+        <div class="flex justify-between items-center text-[11px] opacity-85 pt-1.5 border-t border-rose-200 dark:border-rose-800/60">
+          <span>Defisit (Kekurangan)</span>
+          <strong class="font-bold text-rose-600 dark:text-rose-400">-${formatRupiah(totalBudget - availableSpend)}</strong>
+        </div>
+      `;
     } else {
-      alertBox.className = 'p-3 rounded-xl text-xs flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800';
-      alertBox.innerHTML = `<div><strong>Seimbang:</strong> Sisa alokasi bebas: ${formatRupiah(availableSpend - totalBudget)}.</div><strong class="text-sm">${formatRupiah(totalBudget)}</strong>`;
+      alertBox.className = 'p-3.5 rounded-xl text-xs bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 space-y-2';
+      alertBox.innerHTML = `
+        <div class="flex items-center justify-between font-bold">
+          <span class="flex items-center space-x-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>Alokasi Seimbang</span>
+          </span>
+          <span class="text-sm font-black">${formatRupiah(totalBudget)}</span>
+        </div>
+        <div class="flex justify-between items-center text-[11px] opacity-85 pt-1.5 border-t border-emerald-200 dark:border-emerald-800/60">
+          <span>Sisa alokasi bebas</span>
+          <strong class="font-bold">${formatRupiah(availableSpend - totalBudget)}</strong>
+        </div>
+      `;
     }
   }
 }
