@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Kakeibo">
 
-  <!-- Anti-FOUC Script (Deteksi Tema Gelap/Terang Instan Sebelum Render) -->
+  <!-- Anti-FOUC Script (Deteksi Tema Gelap/Terang Instan) -->
   <script>
     (function() {
       const savedTheme = localStorage.getItem('kakeibo_theme');
@@ -28,7 +28,7 @@
   <!-- Google Fonts: Newsreader (Editorial Serif) + Plus Jakarta Sans (Data Sans) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
@@ -46,18 +46,18 @@
           },
           colors: {
             zen: {
-              paper: '#FAF9F5',       // Background mode terang
-              surface: '#FFFFFF',     // Card mode terang
-              subtle: '#F2EFEB',      // Border & input mode terang
-              charcoal: '#141413',    // Background mode gelap
-              cardDark: '#1C1B1A',    // Card mode gelap
-              subtleDark: '#282725',  // Border & input mode gelap
-              ink: '#1A1918',         // Teks utama terang
-              inkMuted: '#73716B',    // Teks sekunder terang
-              cream: '#ECE9E2',       // Teks utama gelap
-              creamMuted: '#9E9B93',  // Teks sekunder gelap
-              accent: '#264E36',      // Hijau pinus jepang
-              accentHover: '#1B3B28',
+              paper: '#FAF9F5',
+              surface: '#FFFFFF',
+              subtle: '#F2EFEB',
+              border: '#EAE7E1',
+              charcoal: '#141413',
+              cardDark: '#1C1B1A',
+              subtleDark: '#282725',
+              borderDark: '#2D2C2A',
+              ink: '#1A1918',
+              inkMuted: '#73716B',
+              cream: '#ECE9E2',
+              creamMuted: '#9E9B93',
             }
           }
         }
@@ -74,14 +74,12 @@
       font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
       -webkit-tap-highlight-color: transparent;
     }
-    
-    /* Scrollbar Halus */
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: #D6D3CD; border-radius: 9999px; }
     .dark ::-webkit-scrollbar-thumb { background: #383734; }
 
-    /* .k-card diselaraskan dengan fungsi render di app.js */
+    /* .k-card disinkronkan dengan app.js */
     .k-card {
       background-color: #FFFFFF;
       border: 1px solid #EAE7E1;
@@ -93,7 +91,7 @@
       border-color: #2D2C2A;
     }
 
-    /* 4 Pilar Kategori - Muted Tone */
+    /* 4 Pilar Kategori Style */
     .badge-needs { background-color: #EBF8FF; color: #2B4365; border: 1px solid #BEE3F8; }
     .dark .badge-needs { background-color: #1A2942; color: #90CDF4; border-color: #2B4365; }
     .card-border-needs { border-left: 4px solid #3182CE; }
@@ -117,7 +115,7 @@
     @keyframes danger-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     .animate-overbudget { animation: danger-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 
-    /* Tab Button Aktif */
+    /* Tab Buttons */
     .tab-btn.active {
       background-color: #1A1918;
       color: #FAF9F5;
@@ -127,7 +125,6 @@
       color: #141413;
     }
 
-    /* Mobile Bottom Nav Button Aktif */
     .mobile-nav-btn.active {
       color: #1A1918;
       font-weight: 700;
@@ -136,7 +133,6 @@
       color: #ECE9E2;
     }
 
-    /* Splash Screen Zen */
     #splashScreen {
       position: fixed; inset: 0; z-index: 9999;
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -159,3 +155,733 @@
     <p class="font-display text-2xl font-medium tracking-tight text-stone-900 dark:text-stone-100 mt-4">Kakeibo</p>
     <p class="text-xs text-stone-500 dark:text-stone-400 mt-1">Pencatatan Keuangan Keluarga (Offline & Privat)</p>
   </div>
+
+  <!-- TOP HEADER -->
+  <header class="bg-white/85 dark:bg-zen-cardDark/85 backdrop-blur-md sticky top-0 z-40 border-b border-stone-200 dark:border-stone-800 transition-colors duration-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo -->
+        <div class="flex items-center space-x-3 cursor-pointer select-none" onclick="switchTab('dashboard')">
+          <div class="w-10 h-10 rounded-xl bg-stone-900 dark:bg-stone-100 flex items-center justify-center text-white dark:text-stone-900 font-serif font-bold text-xl shadow-sm transition">
+            家
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-display font-semibold text-xl tracking-tight text-stone-900 dark:text-stone-100">Kakeibo</span>
+              <span class="text-[10px] font-medium uppercase px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 border border-stone-200 dark:border-stone-700 hidden sm:inline-block">Offline PWA</span>
+            </div>
+            <p class="text-[11px] text-stone-500 dark:text-stone-400 hidden sm:block">Pencatatan Keuangan Penuh Kesadaran</p>
+          </div>
+        </div>
+
+        <!-- Month Navigation -->
+        <div class="flex items-center space-x-1 sm:space-x-1.5 bg-stone-100 dark:bg-stone-800/80 p-1 rounded-xl border border-stone-200 dark:border-stone-700">
+          <button onclick="changeMonthOffset(-1)" title="Bulan Sebelumnya" class="p-1.5 rounded-lg text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-white dark:hover:bg-stone-700 transition">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </button>
+          
+          <select id="selectMonth" onchange="onMonthSelected(this.value)" class="bg-transparent text-stone-900 dark:text-stone-100 font-semibold text-xs sm:text-sm px-2 py-1 outline-none cursor-pointer">
+          </select>
+
+          <button onclick="changeMonthOffset(1)" title="Bulan Berikutnya" class="p-1.5 rounded-lg text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 hover:bg-white dark:hover:bg-stone-700 transition">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+
+          <button onclick="goToCurrentMonth()" class="text-xs bg-white dark:bg-stone-700 hover:bg-stone-200 dark:hover:bg-stone-600 text-stone-700 dark:text-stone-200 px-2 py-1 rounded-lg ml-1 hidden sm:inline-block font-medium transition shadow-2xs">
+            Bulan Ini
+          </button>
+        </div>
+
+        <!-- Action Tools: Mode Gelap/Terang & Refresh -->
+        <div class="flex items-center space-x-1.5">
+          <button onclick="toggleTheme()" id="themeToggleBtn" title="Ganti Tema (Terang / Gelap)" class="p-2 rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-transparent hover:border-stone-200 dark:hover:border-stone-700 transition">
+            <i data-lucide="moon" class="w-4 h-4 hidden dark:block"></i>
+            <i data-lucide="sun" class="w-4 h-4 block dark:hidden"></i>
+          </button>
+
+          <button onclick="refreshData()" title="Muat Ulang Data" class="p-2 rounded-xl text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 border border-transparent hover:border-stone-200 dark:hover:border-stone-700 transition">
+            <i data-lucide="rotate-cw" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Desktop Navigation Tabs -->
+    <div class="hidden md:block bg-stone-50/80 dark:bg-stone-900/60 border-t border-stone-200/70 dark:border-stone-800 px-4">
+      <div class="max-w-7xl mx-auto flex space-x-1 py-1.5">
+        <button onclick="switchTab('dashboard')" id="dtab-dashboard" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition flex items-center space-x-2 active">
+          <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+          <span>Dashboard & Anggaran</span>
+        </button>
+        <button onclick="switchTab('input')" id="dtab-input" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition flex items-center space-x-2">
+          <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i>
+          <span>Catat Transaksi</span>
+        </button>
+        <button onclick="switchTab('history')" id="dtab-history" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition flex items-center space-x-2">
+          <i data-lucide="receipt-text" class="w-3.5 h-3.5"></i>
+          <span>Riwayat Transaksi</span>
+        </button>
+        <button onclick="switchTab('refleksi')" id="dtab-refleksi" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition flex items-center space-x-2">
+          <i data-lucide="feather" class="w-3.5 h-3.5"></i>
+          <span>Refleksi Kakeibo</span>
+        </button>
+        <button onclick="switchTab('config')" id="dtab-config" class="tab-btn px-3.5 py-1.5 rounded-lg text-xs font-semibold text-stone-600 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-100 transition flex items-center space-x-2">
+          <i data-lucide="sliders" class="w-3.5 h-3.5"></i>
+          <span>Anggaran & Cadangan</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ========================================================================= -->
+    <!-- TAB 1: DASHBOARD & RINGKASAN SALDO -->
+    <!-- ========================================================================= -->
+    <section id="view-dashboard" class="space-y-6">
+      
+      <!-- HERO CARD (Desain Deep Sumi / Obsidian Mewah & Tenang) -->
+      <div class="k-card p-6 sm:p-8 bg-stone-900 dark:bg-stone-900 text-white relative overflow-hidden border border-stone-800 shadow-sm">
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div class="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full text-xs font-medium bg-stone-800 text-stone-300 border border-stone-700/60 mb-3">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span>Prinsip Kakeibo: Tabung Dulu, Belanja Sisanya</span>
+            </div>
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-stone-400">Sisa Uang Belanja Tersedia Bulan Ini</h2>
+            <div class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white mt-1" id="dashRemainingAvailable">
+              Rp 0
+            </div>
+            <p class="text-xs text-stone-400 mt-2">
+              Formula: <span class="font-mono bg-stone-800/80 px-2 py-0.5 rounded text-stone-300">Pemasukan - Target Tabungan - Total Pengeluaran</span>
+            </p>
+          </div>
+
+          <div class="flex flex-wrap gap-2.5">
+            <button onclick="switchTab('input')" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2.5 rounded-xl transition flex items-center space-x-2 text-xs sm:text-sm shadow-sm">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+              <span>Catat Transaksi</span>
+            </button>
+            <button onclick="switchTab('refleksi')" class="bg-stone-800 hover:bg-stone-700 text-stone-200 font-medium px-4 py-2.5 rounded-xl border border-stone-700 transition flex items-center space-x-2 text-xs sm:text-sm">
+              <i data-lucide="feather" class="w-4 h-4"></i>
+              <span>Tulis Refleksi</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-stone-800 text-stone-300">
+          <div class="bg-stone-800/50 p-3.5 rounded-xl border border-stone-700/50">
+            <p class="text-xs text-stone-400">Total Pemasukan</p>
+            <p class="text-lg font-bold text-emerald-400 mt-0.5" id="dashTotalIncome">Rp 0</p>
+          </div>
+          <div class="bg-stone-800/50 p-3.5 rounded-xl border border-stone-700/50">
+            <p class="text-xs text-stone-400">Target Tabungan (Diamankan)</p>
+            <p class="text-lg font-bold text-teal-300 mt-0.5" id="dashTargetSavings">Rp 0</p>
+          </div>
+          <div class="bg-stone-800/50 p-3.5 rounded-xl border border-stone-700/50">
+            <p class="text-xs text-stone-400">Total Pengeluaran Aktual</p>
+            <p class="text-lg font-bold text-rose-400 mt-0.5" id="dashTotalExpense">Rp 0</p>
+            <p class="text-[10px] text-stone-400" id="dashExpenseRatio">0% dari Uang Belanja</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 PILAR KAKEIBO CARDS -->
+      <div>
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="font-display text-lg sm:text-xl font-medium tracking-tight text-stone-900 dark:text-stone-100">4 Pilar Anggaran Kakeibo</h3>
+            <p class="text-xs text-stone-500 dark:text-stone-400">Pantau progres pengeluaran dan sisa budget per pilar</p>
+          </div>
+          <button onclick="switchTab('config')" class="text-xs text-stone-700 dark:text-stone-300 hover:underline font-semibold flex items-center space-x-1">
+            <span>Ubah Anggaran</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="kakeiboCardsContainer"></div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="k-card p-5">
+          <h4 class="text-sm font-bold text-stone-800 dark:text-stone-200 mb-3 flex items-center space-x-2">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-stone-500"></i>
+            <span>Proporsi Pengeluaran</span>
+          </h4>
+          <div class="h-64 flex items-center justify-center relative">
+            <canvas id="kakeiboDonutChart"></canvas>
+            <div id="donutEmptyMsg" class="hidden absolute text-center text-xs text-stone-400">Belum ada data pengeluaran</div>
+          </div>
+        </div>
+        <div class="k-card p-5 lg:col-span-2">
+          <h4 class="text-sm font-bold text-stone-800 dark:text-stone-200 mb-3 flex items-center space-x-2">
+            <i data-lucide="bar-chart-3" class="w-4 h-4 text-stone-500"></i>
+            <span>Anggaran vs Realisasi Pengeluaran</span>
+          </h4>
+          <div class="h-64">
+            <canvas id="kakeiboBarChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSAKSI TERBARU -->
+      <div class="k-card p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-sm font-bold text-stone-800 dark:text-stone-200">Transaksi Terbaru Bulan Ini</h4>
+            <p class="text-xs text-stone-400">Maksimal 7 transaksi terakhir</p>
+          </div>
+          <button onclick="switchTab('history')" class="text-xs text-stone-700 dark:text-stone-300 hover:underline font-semibold flex items-center space-x-1">
+            <span>Lihat Semua</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-stone-200 dark:border-stone-800 text-stone-500 dark:text-stone-400 font-semibold">
+                <th class="py-2.5 px-3">Tanggal</th>
+                <th class="py-2.5 px-3">Kategori</th>
+                <th class="py-2.5 px-3">Subkategori & Catatan</th>
+                <th class="py-2.5 px-3">Metode</th>
+                <th class="py-2.5 px-3 text-right">Nominal</th>
+              </tr>
+            </thead>
+            <tbody id="recentTxnTableBody" class="divide-y divide-stone-100 dark:divide-stone-800"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 2: CATAT TRANSAKSI CEPAT -->
+    <!-- ========================================================================= -->
+    <section id="view-input" class="hidden max-w-2xl mx-auto">
+      <div class="k-card p-6 sm:p-8">
+        <div class="mb-6 text-center">
+          <h2 class="font-display text-2xl font-medium tracking-tight text-stone-900 dark:text-stone-100">Catat Transaksi</h2>
+          <p class="text-xs text-stone-500 dark:text-stone-400 mt-1">Data tersimpan privat & offline di memori perangkat Anda</p>
+        </div>
+
+        <form id="formTransaction" onsubmit="handleSaveTransaction(event)" class="space-y-5">
+          <!-- Toggle Jenis -->
+          <div>
+            <label class="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-2">Jenis Transaksi</label>
+            <div class="grid grid-cols-2 gap-2 p-1 bg-stone-100 dark:bg-stone-800 rounded-xl">
+              <button type="button" id="btnTypeExpense" onclick="setTransactionType('Pengeluaran')" class="py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 bg-white dark:bg-stone-700 text-rose-600 dark:text-rose-400 shadow-2xs">
+                <span>Pengeluaran</span>
+              </button>
+              <button type="button" id="btnTypeIncome" onclick="setTransactionType('Pemasukan')" class="py-2.5 rounded-lg text-xs font-bold transition flex items-center justify-center space-x-2 text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200">
+                <span>Pemasukan</span>
+              </button>
+            </div>
+            <input type="hidden" id="txnJenis" value="Pengeluaran">
+          </div>
+
+          <!-- Tanggal -->
+          <div>
+            <label for="txnTanggal" class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Tanggal Transaksi *</label>
+            <input type="date" id="txnTanggal" required class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm focus:ring-2 focus:ring-stone-400 focus:outline-none dark:text-stone-100">
+          </div>
+
+          <!-- 4 Pilar Kakeibo Buttons -->
+          <div id="sectionKakeiboCategory">
+            <label class="block text-xs font-bold text-stone-700 dark:text-stone-300 uppercase tracking-wider mb-2">Pilar Kakeibo *</label>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <button type="button" onclick="selectCategory('Needs')" id="catBtn-Needs" class="p-3 border-2 rounded-xl text-center border-sky-500 bg-sky-50 dark:bg-sky-950/40 text-sky-800 dark:text-sky-300 transition">
+                <div class="text-xs font-bold">Needs</div>
+                <div class="text-[10px] opacity-75 mt-0.5">Kebutuhan Pokok</div>
+              </button>
+              <button type="button" onclick="selectCategory('Wants')" id="catBtn-Wants" class="p-3 border-2 rounded-xl text-center border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 transition">
+                <div class="text-xs font-bold">Wants</div>
+                <div class="text-[10px] opacity-75 mt-0.5">Keinginan</div>
+              </button>
+              <button type="button" onclick="selectCategory('Culture')" id="catBtn-Culture" class="p-3 border-2 rounded-xl text-center border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 transition">
+                <div class="text-xs font-bold">Culture</div>
+                <div class="text-[10px] opacity-75 mt-0.5">Wawasan & Seni</div>
+              </button>
+              <button type="button" onclick="selectCategory('Unexpected')" id="catBtn-Unexpected" class="p-3 border-2 rounded-xl text-center border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 transition">
+                <div class="text-xs font-bold">Unexpected</div>
+                <div class="text-[10px] opacity-75 mt-0.5">Tak Terduga</div>
+              </button>
+            </div>
+            <input type="hidden" id="txnKategori" value="Needs">
+          </div>
+
+          <!-- Subkategori -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="txnSubkategoriSelect" class="block text-xs font-bold text-stone-700 dark:text-stone-300">Subkategori *</label>
+              <div class="flex items-center space-x-2">
+                <button type="button" onclick="openSubcategoryManager()" class="text-[11px] text-stone-600 dark:text-stone-400 hover:underline font-semibold">+ Kelola</button>
+                <span class="text-stone-300 dark:text-stone-600">|</span>
+                <button type="button" onclick="toggleCustomSubcategory()" class="text-[11px] text-stone-500 hover:underline">Tulis Sendiri</button>
+              </div>
+            </div>
+            <select id="txnSubkategoriSelect" onchange="onSubcategorySelected(this.value)" class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm focus:ring-2 focus:ring-stone-400 focus:outline-none dark:text-stone-100"></select>
+            <input type="text" id="txnSubkategoriCustom" placeholder="Ketik subkategori baru..." class="hidden mt-2 w-full px-3.5 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm focus:ring-2 focus:ring-stone-400 focus:outline-none dark:text-stone-100">
+          </div>
+
+          <!-- Nominal -->
+          <div>
+            <label for="txnNominal" class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Nominal (Rp) *</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-stone-400 font-bold text-sm">Rp</div>
+              <input type="number" id="txnNominal" min="1" required placeholder="0" oninput="updateNominalPreview(this.value)" class="w-full pl-11 pr-4 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm font-semibold focus:ring-2 focus:ring-stone-400 focus:outline-none dark:text-stone-100">
+            </div>
+            <div id="nominalPreviewBox" class="mt-1 text-xs text-stone-600 dark:text-stone-400 font-medium">Rp 0</div>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              <button type="button" onclick="addQuickNominal(10000)" class="px-2.5 py-1 text-[11px] bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg">+10rb</button>
+              <button type="button" onclick="addQuickNominal(20000)" class="px-2.5 py-1 text-[11px] bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg">+20rb</button>
+              <button type="button" onclick="addQuickNominal(50000)" class="px-2.5 py-1 text-[11px] bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg">+50rb</button>
+              <button type="button" onclick="addQuickNominal(100000)" class="px-2.5 py-1 text-[11px] bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 rounded-lg">+100rb</button>
+              <button type="button" onclick="clearNominal()" class="px-2.5 py-1 text-[11px] bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 text-rose-600 dark:text-rose-400 rounded-lg">Reset</button>
+            </div>
+          </div>
+
+          <!-- Metode Pembayaran -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label for="txnMetode" class="block text-xs font-bold text-stone-700 dark:text-stone-300">Metode Pembayaran</label>
+              <button type="button" onclick="openPaymentMethodManager()" class="text-[11px] text-stone-600 dark:text-stone-400 hover:underline font-semibold">+ Kelola</button>
+            </div>
+            <select id="txnMetode" class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm focus:ring-2 focus:ring-stone-400 focus:outline-none dark:text-stone-100"></select>
+          </div>
+
+          <!-- Catatan -->
+          <div>
+            <label for="txnCatatan" class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Catatan</label>
+            <textarea id="txnCatatan" rows="2" placeholder="Detail transaksi..." class="w-full px-3.5 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm focus:ring-2 focus:ring-stone-400 focus:outline-none dark:text-stone-100"></textarea>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" id="btnSubmitTxn" class="w-full bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white text-white dark:text-stone-900 font-bold py-3.5 px-4 rounded-xl shadow transition flex items-center justify-center space-x-2">
+              <span id="btnSubmitTxnText">Simpan Transaksi di HP</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 3: RIWAYAT TRANSAKSI -->
+    <!-- ========================================================================= -->
+    <section id="view-history" class="hidden space-y-5">
+      <div class="k-card p-4 sm:p-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <input type="text" id="filterSearch" placeholder="Cari transaksi..." oninput="debounceFilterTransactions()" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs sm:text-sm dark:text-stone-100">
+          <select id="filterCategory" onchange="filterTransactions()" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs sm:text-sm dark:text-stone-100">
+            <option value="Semua">Semua Kategori</option>
+            <option value="Needs">Needs</option>
+            <option value="Wants">Wants</option>
+            <option value="Culture">Culture</option>
+            <option value="Unexpected">Unexpected</option>
+            <option value="Pemasukan">Pemasukan</option>
+          </select>
+          <select id="filterType" onchange="filterTransactions()" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs sm:text-sm dark:text-stone-100">
+            <option value="Semua">Semua Jenis</option>
+            <option value="Pengeluaran">Pengeluaran</option>
+            <option value="Pemasukan">Pemasukan</option>
+          </select>
+          <button onclick="resetFilters()" class="w-full px-3 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-300 font-semibold rounded-xl text-xs transition">Reset Filter</button>
+        </div>
+        <div class="flex flex-wrap items-center justify-between mt-3 pt-3 border-t border-stone-100 dark:border-stone-800 text-xs text-stone-500 dark:text-stone-400">
+          <div>Ditemukan <span id="filteredCount" class="font-bold text-stone-800 dark:text-stone-200">0</span> transaksi pada <span id="filterActiveMonth" class="font-bold text-stone-800 dark:text-stone-200">-</span></div>
+          <div class="flex items-center space-x-3 mt-1 sm:mt-0">
+            <span>Masuk: <strong class="text-emerald-600 dark:text-emerald-400" id="filterSumIncome">Rp 0</strong></span>
+            <span>Keluar: <strong class="text-rose-600 dark:text-rose-400" id="filterSumExpense">Rp 0</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="k-card overflow-hidden">
+        <div class="hidden sm:block overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-stone-50 dark:bg-stone-800/60 border-b border-stone-200 dark:border-stone-800 text-stone-600 dark:text-stone-400 font-bold uppercase tracking-wider">
+              <tr>
+                <th class="py-3 px-4">Tanggal</th>
+                <th class="py-3 px-4">Kategori</th>
+                <th class="py-3 px-4">Subkategori</th>
+                <th class="py-3 px-4">Catatan</th>
+                <th class="py-3 px-4">Metode</th>
+                <th class="py-3 px-4 text-right">Nominal</th>
+                <th class="py-3 px-4 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody" class="divide-y divide-stone-100 dark:divide-stone-800"></tbody>
+          </table>
+        </div>
+        <div class="sm:hidden divide-y divide-stone-100 dark:divide-stone-800" id="historyCardsMobile"></div>
+        <div id="historyEmptyState" class="hidden p-12 text-center text-stone-400 text-sm">Belum ada transaksi di bulan ini.</div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 4: REFLEKSI KAKEIBO -->
+    <!-- ========================================================================= -->
+    <section id="view-refleksi" class="hidden space-y-6 max-w-4xl mx-auto">
+      <div class="k-card p-6 sm:p-8">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-stone-100 dark:border-stone-800">
+          <div>
+            <h3 class="font-display text-xl font-medium tracking-tight text-stone-900 dark:text-stone-100">Evaluasi Finansial Bulanan</h3>
+            <p class="text-xs text-stone-500 dark:text-stone-400">Periode: <span id="refleksiTargetMonth" class="font-bold text-stone-800 dark:text-stone-200">-</span></p>
+          </div>
+        </div>
+
+        <form id="formRefleksi" onsubmit="handleSaveRefleksi(event)" class="space-y-5">
+          <input type="hidden" id="refleksiId" value="">
+          <div>
+            <label for="refYangBerjalanBaik" class="block text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider mb-1">1. Apa pencapaian baik yang berhasil bulan ini?</label>
+            <textarea id="refYangBerjalanBaik" rows="3" required placeholder="Tuliskan keberhasilan..." class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm focus:ring-2 focus:ring-stone-400 focus:outline-none dark:text-stone-100"></textarea>
+          </div>
+          <div>
+            <label for="refPosYangBoros" class="block text-xs font-bold text-rose-800 dark:text-rose-400 uppercase tracking-wider mb-1">2. Pos pengeluaran mana yang sempat boros?</label>
+            <textarea id="refPosYangBoros" rows="3" required placeholder="Tulis pos yang boros..." class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm focus:ring-2 focus:ring-stone-400 focus:outline-none dark:text-stone-100"></textarea>
+          </div>
+          <div>
+            <label for="refRencanaPerbaikan" class="block text-xs font-bold text-sky-800 dark:text-sky-400 uppercase tracking-wider mb-1">3. Apa rencana perbaikan konkret untuk bulan depan?</label>
+            <textarea id="refRencanaPerbaikan" rows="3" required placeholder="Tulis rencana perbaikan..." class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm focus:ring-2 focus:ring-stone-400 focus:outline-none dark:text-stone-100"></textarea>
+          </div>
+          <div>
+            <label for="refCatatanTambahan" class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Catatan Tambahan / Doa Keluarga</label>
+            <textarea id="refCatatanTambahan" rows="2" placeholder="Catatan opsional..." class="w-full px-3.5 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm dark:text-stone-100"></textarea>
+          </div>
+          <button type="submit" id="btnSubmitRefleksi" class="w-full bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white text-white dark:text-stone-900 font-bold py-3.5 px-4 rounded-xl shadow transition">Simpan Refleksi Kakeibo</button>
+        </form>
+      </div>
+
+      <div>
+        <h4 class="font-display text-lg font-medium text-stone-900 dark:text-stone-100 mb-3">Arsip Refleksi Bulan Sebelumnya</h4>
+        <div class="space-y-4" id="pastRefleksiContainer"></div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- TAB 5: PENGATURAN ANGGARAN & CADANGAN DATA (BACKUP) -->
+    <!-- ========================================================================= -->
+    <section id="view-config" class="hidden max-w-2xl mx-auto space-y-6">
+      
+      <!-- CARD 1: PENGATURAN ANGGARAN -->
+      <div class="k-card p-6 sm:p-8">
+        <h2 class="font-display text-2xl font-medium tracking-tight text-stone-900 dark:text-stone-100">Anggaran Bulanan</h2>
+        <p class="text-xs text-stone-500 dark:text-stone-400 mt-1 mb-6">Atur target tabungan & alokasi 4 pilar untuk <strong id="configActiveMonthLabel">-</strong></p>
+
+        <form id="formConfig" onsubmit="handleSaveConfig(event)" class="space-y-5">
+          <div>
+            <label for="cfgIncome" class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Estimasi Pemasukan (Rp) *</label>
+            <input type="number" id="cfgIncome" min="0" step="1000" required oninput="recalcConfigBalance()" class="w-full px-3.5 py-2.5 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm font-semibold dark:text-stone-100">
+          </div>
+          <div class="p-4 bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900 rounded-xl">
+            <label for="cfgSavings" class="block text-xs font-bold text-teal-900 dark:text-teal-300 mb-1">Target Tabungan (Diamankan di Awal) *</label>
+            <input type="number" id="cfgSavings" min="0" step="1000" required oninput="recalcConfigBalance()" class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-teal-300 dark:border-teal-700 rounded-xl text-sm font-bold text-teal-800 dark:text-teal-300">
+            <div class="flex justify-between items-center text-xs text-teal-800 dark:text-teal-300 mt-2">
+              <span>Sisa Uang untuk Belanja:</span>
+              <strong id="cfgAvailableSpendLabel" class="text-sm">Rp 0</strong>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-stone-600 dark:text-stone-400">Alokasi 4 Pilar Kakeibo</h4>
+            <div>
+              <label class="text-xs font-bold text-sky-700 dark:text-sky-400">1. Needs (Kebutuhan Pokok)</label>
+              <input type="number" id="cfgBudgetNeeds" min="0" step="1000" required oninput="recalcConfigBalance()" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm font-semibold mt-1 dark:text-stone-100">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-purple-700 dark:text-purple-400">2. Wants (Keinginan)</label>
+              <input type="number" id="cfgBudgetWants" min="0" step="1000" required oninput="recalcConfigBalance()" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm font-semibold mt-1 dark:text-stone-100">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-amber-700 dark:text-amber-400">3. Culture (Budaya & Wawasan)</label>
+              <input type="number" id="cfgBudgetCulture" min="0" step="1000" required oninput="recalcConfigBalance()" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm font-semibold mt-1 dark:text-stone-100">
+            </div>
+            <div>
+              <label class="text-xs font-bold text-rose-700 dark:text-rose-400">4. Unexpected (Tak Terduga)</label>
+              <input type="number" id="cfgBudgetUnexpected" min="0" step="1000" required oninput="recalcConfigBalance()" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm font-semibold mt-1 dark:text-stone-100">
+            </div>
+          </div>
+
+          <div id="cfgBalanceAlert" class="p-3 rounded-xl text-xs flex items-center justify-between bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
+            <span>Total Alokasi 4 Pilar:</span>
+            <strong id="cfgTotalBudgetLabel" class="text-sm font-bold">Rp 0</strong>
+          </div>
+
+          <div>
+            <label for="cfgCatatan" class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Catatan Anggaran</label>
+            <input type="text" id="cfgCatatan" placeholder="Catatan anggaran..." class="w-full px-3.5 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-sm dark:text-stone-100">
+          </div>
+
+          <button type="submit" class="w-full bg-stone-900 dark:bg-stone-100 hover:bg-stone-800 dark:hover:bg-white text-white dark:text-stone-900 font-bold py-3.5 px-4 rounded-xl shadow transition">Simpan Anggaran Bulan Ini</button>
+        </form>
+      </div>
+
+      <!-- CARD 2: BACKUP & RESTORE -->
+      <div class="k-card p-6 sm:p-8 bg-stone-900 text-white border border-stone-800">
+        <div class="flex items-center space-x-3 mb-2">
+          <i data-lucide="hard-drive-download" class="w-6 h-6 text-emerald-400"></i>
+          <div>
+            <h3 class="text-base font-bold text-white">Cadangan & Pemulihan Data</h3>
+            <p class="text-xs text-stone-400">Data tersimpan di perangkat ini. Unduh cadangan secara berkala agar aman saat ganti perangkat.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-5">
+          <button type="button" onclick="exportBackupData()" class="py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Unduh Cadangan (JSON)</span>
+          </button>
+
+          <label class="py-3 px-4 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-2 cursor-pointer border border-stone-700">
+            <i data-lucide="upload" class="w-4 h-4 text-emerald-400"></i>
+            <span>Pulihkan Data (Import)</span>
+            <input type="file" id="importBackupInput" accept=".json" onchange="importBackupData(event)" class="hidden">
+          </label>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-stone-800 flex justify-between items-center text-[11px] text-stone-400">
+          <span>Hapus memori dan mulai dari awal?</span>
+          <button type="button" onclick="resetAllData()" class="text-rose-400 hover:underline font-semibold">Reset Semua Data</button>
+        </div>
+      </div>
+
+      <!-- CARD 3: METODE PEMBAYARAN -->
+      <div class="k-card p-6 sm:p-8">
+        <div class="flex items-center justify-between pb-4 border-b border-stone-100 dark:border-stone-800">
+          <div>
+            <h3 class="text-base font-bold text-stone-900 dark:text-stone-100">Metode Pembayaran</h3>
+            <p class="text-xs text-stone-500 dark:text-stone-400">Kelola rekening bank, dompet digital, dan tunai</p>
+          </div>
+          <button type="button" onclick="openPaymentMethodManager()" class="px-3 py-1.5 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-xl text-xs font-bold">+ Kelola</button>
+        </div>
+        <div id="cfgPaymentMethodsSummary" class="mt-4 flex flex-wrap gap-2"></div>
+      </div>
+
+      <!-- CARD 4: SUBKATEGORI -->
+      <div class="k-card p-6 sm:p-8">
+        <div class="flex items-center justify-between pb-4 border-b border-stone-100 dark:border-stone-800">
+          <div>
+            <h3 class="text-base font-bold text-stone-900 dark:text-stone-100">Subkategori Kakeibo</h3>
+            <p class="text-xs text-stone-500 dark:text-stone-400">Kelola pos pengeluaran 4 pilar & pemasukan</p>
+          </div>
+          <button type="button" onclick="openSubcategoryManager()" class="px-3 py-1.5 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 rounded-xl text-xs font-bold">+ Kelola</button>
+        </div>
+        <div id="cfgSubcategoriesSummary" class="mt-4 space-y-3"></div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: EDIT TRANSAKSI -->
+  <!-- ========================================================================= -->
+  <div id="editModal" class="hidden fixed inset-0 bg-stone-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 rounded-2xl shadow-2xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto border border-stone-200 dark:border-stone-800">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-4">
+        <div>
+          <h3 class="text-base font-bold text-stone-900 dark:text-stone-100">Edit Data Transaksi</h3>
+          <p class="text-xs text-stone-400" id="editModalSubtitle">ID: -</p>
+        </div>
+        <button onclick="closeEditModal()" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form id="formEditTransaction" onsubmit="handleUpdateTransaction(event)" class="space-y-4">
+        <input type="hidden" id="editTxnId">
+        <div>
+          <label class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Jenis</label>
+          <select id="editTxnJenis" onchange="onEditTypeChange(this.value)" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold dark:text-stone-100">
+            <option value="Pengeluaran">Pengeluaran</option>
+            <option value="Pemasukan">Pemasukan</option>
+          </select>
+        </div>
+        <div>
+          <label for="editTxnTanggal" class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Tanggal</label>
+          <input type="date" id="editTxnTanggal" required class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs dark:text-stone-100">
+        </div>
+        <div>
+          <label for="editTxnKategori" class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Kategori Kakeibo</label>
+          <select id="editTxnKategori" onchange="onEditCategoryChange(this.value)" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-semibold dark:text-stone-100">
+            <option value="Needs">Needs</option>
+            <option value="Wants">Wants</option>
+            <option value="Culture">Culture</option>
+            <option value="Unexpected">Unexpected</option>
+            <option value="Pemasukan">Pemasukan</option>
+          </select>
+        </div>
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label for="editTxnSubkategoriSelect" class="block text-xs font-bold text-stone-700 dark:text-stone-300">Subkategori</label>
+            <button type="button" onclick="toggleEditCustomSubcategory()" class="text-[11px] text-stone-500 hover:underline">Tulis Sendiri</button>
+          </div>
+          <select id="editTxnSubkategoriSelect" onchange="onEditSubcategorySelected(this.value)" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs dark:text-stone-100"></select>
+          <input type="text" id="editTxnSubkategori" class="hidden mt-1.5 w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs dark:text-stone-100">
+        </div>
+        <div>
+          <label for="editTxnNominal" class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Nominal (Rp)</label>
+          <input type="number" id="editTxnNominal" min="1" required class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs font-bold dark:text-stone-100">
+        </div>
+        <div>
+          <label for="editTxnMetode" class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Metode Pembayaran</label>
+          <select id="editTxnMetode" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs dark:text-stone-100"></select>
+        </div>
+        <div>
+          <label for="editTxnCatatan" class="block text-xs font-bold text-stone-700 dark:text-stone-300 mb-1">Catatan</label>
+          <textarea id="editTxnCatatan" rows="2" class="w-full px-3 py-2 bg-stone-50 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-xl text-xs dark:text-stone-100"></textarea>
+        </div>
+        <div class="flex space-x-2 pt-2">
+          <button type="button" onclick="closeEditModal()" class="w-1/2 py-2.5 px-4 rounded-xl border border-stone-200 dark:border-stone-700 text-xs font-bold text-stone-700 dark:text-stone-300">Batal</button>
+          <button type="submit" class="w-1/2 py-2.5 px-4 rounded-xl bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-xs font-bold shadow">Perbarui</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: KELOLA METODE PEMBAYARAN -->
+  <!-- ========================================================================= -->
+  <div id="paymentMethodModal" class="hidden fixed inset-0 bg-stone-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 rounded-2xl shadow-2xl max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto border border-stone-200 dark:border-stone-800">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-5">
+        <h3 class="text-base font-bold text-stone-900 dark:text-stone-100">Kelola Metode Pembayaran</h3>
+        <button onclick="closePaymentMethodManager()" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="bg-stone-50 dark:bg-stone-800/50 p-4 rounded-xl border border-stone-200 dark:border-stone-700 mb-5">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-xs font-bold text-stone-800 dark:text-stone-200 uppercase" id="pmFormTitleText">Tambah Metode Baru</h4>
+          <button type="button" id="btnCancelEditPm" onclick="resetPaymentMethodForm()" class="hidden text-[11px] text-stone-500">✕ Batal Edit</button>
+        </div>
+        <form id="formPaymentMethod" onsubmit="handleSavePaymentMethod(event)" class="space-y-3">
+          <input type="hidden" id="pmId">
+          <input type="text" id="pmNama" required placeholder="Contoh: Bank Jago, ShopeePay..." class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs font-semibold dark:text-stone-100">
+          <div class="grid grid-cols-2 gap-3">
+            <select id="pmKategori" class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100">
+              <option value="Transfer Bank">Transfer Bank</option>
+              <option value="E-Wallet">E-Wallet</option>
+              <option value="Tunai">Tunai</option>
+              <option value="Kartu Debit/Kredit">Kartu Debit/Kredit</option>
+              <option value="QRIS">QRIS</option>
+            </select>
+            <select id="pmStatus" class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100">
+              <option value="Aktif">Aktif</option>
+              <option value="Nonaktif">Nonaktif</option>
+            </select>
+          </div>
+          <button type="submit" class="w-full py-2.5 px-4 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-xs font-bold rounded-lg shadow"><span id="btnSubmitPmText">Simpan Metode</span></button>
+        </form>
+      </div>
+      <div class="border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden max-h-56 overflow-y-auto">
+        <table class="w-full text-left text-xs"><tbody id="pmTableBody" class="divide-y divide-stone-100 dark:divide-stone-800"></tbody></table>
+      </div>
+      <div class="mt-4 flex justify-end"><button onclick="closePaymentMethodManager()" class="px-4 py-2 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 rounded-xl text-xs font-bold">Tutup</button></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MODAL: KELOLA SUBKATEGORI -->
+  <!-- ========================================================================= -->
+  <div id="subcategoryModal" class="hidden fixed inset-0 bg-stone-950/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-stone-900 rounded-2xl shadow-2xl max-w-xl w-full p-6 max-h-[90vh] overflow-y-auto border border-stone-200 dark:border-stone-800">
+      <div class="flex items-center justify-between pb-3 border-b border-stone-100 dark:border-stone-800 mb-5">
+        <h3 class="text-base font-bold text-stone-900 dark:text-stone-100">Kelola Subkategori</h3>
+        <button onclick="closeSubcategoryManager()" class="text-stone-400 hover:text-stone-600 dark:hover:text-stone-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="bg-stone-50 dark:bg-stone-800/50 p-4 rounded-xl border border-stone-200 dark:border-stone-700 mb-5">
+        <div class="flex items-center justify-between mb-3">
+          <h4 class="text-xs font-bold text-stone-800 dark:text-stone-200 uppercase" id="subFormTitleText">Tambah Subkategori Baru</h4>
+          <button type="button" id="btnCancelEditSub" onclick="resetSubcategoryForm()" class="hidden text-[11px] text-stone-500">✕ Batal Edit</button>
+        </div>
+        <form id="formSubcategory" onsubmit="handleSaveSubcategory(event)" class="space-y-3">
+          <input type="hidden" id="subId">
+          <div class="grid grid-cols-2 gap-3">
+            <select id="subKategoriSelect" class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs font-semibold dark:text-stone-100">
+              <option value="Needs">Needs</option>
+              <option value="Wants">Wants</option>
+              <option value="Culture">Culture</option>
+              <option value="Unexpected">Unexpected</option>
+              <option value="Pemasukan">Pemasukan</option>
+            </select>
+            <select id="subStatusSelect" class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs dark:text-stone-100">
+              <option value="Aktif">Aktif</option>
+              <option value="Nonaktif">Nonaktif</option>
+            </select>
+          </div>
+          <input type="text" id="subNama" required placeholder="Contoh: Belanja Pasar, Gaji Pokok..." class="w-full px-3 py-2 bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 rounded-lg text-xs font-semibold dark:text-stone-100">
+          <button type="submit" class="w-full py-2.5 px-4 bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900 text-xs font-bold rounded-lg shadow"><span id="btnSubmitSubText">Simpan Subkategori</span></button>
+        </form>
+      </div>
+      <div class="flex flex-wrap gap-1 mb-3">
+        <button type="button" onclick="filterModalSubcategories('Semua')" id="subFilterTab-Semua" class="sub-filter-btn px-2.5 py-1 text-[11px] font-bold rounded-lg bg-stone-900 dark:bg-stone-100 text-white dark:text-stone-900">Semua</button>
+        <button type="button" onclick="filterModalSubcategories('Needs')" id="subFilterTab-Needs" class="sub-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400">Needs</button>
+        <button type="button" onclick="filterModalSubcategories('Wants')" id="subFilterTab-Wants" class="sub-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400">Wants</button>
+        <button type="button" onclick="filterModalSubcategories('Culture')" id="subFilterTab-Culture" class="sub-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400">Culture</button>
+        <button type="button" onclick="filterModalSubcategories('Unexpected')" id="subFilterTab-Unexpected" class="sub-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400">Unexpected</button>
+        <button type="button" onclick="filterModalSubcategories('Pemasukan')" id="subFilterTab-Pemasukan" class="sub-filter-btn px-2.5 py-1 text-[11px] font-semibold rounded-lg bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400">Pemasukan</button>
+      </div>
+      <div class="border border-stone-200 dark:border-stone-700 rounded-xl overflow-hidden max-h-56 overflow-y-auto">
+        <table class="w-full text-left text-xs"><tbody id="subTableBody" class="divide-y divide-stone-100 dark:divide-stone-800"></tbody></table>
+      </div>
+      <div class="mt-4 flex justify-end"><button onclick="closeSubcategoryManager()" class="px-4 py-2 bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 rounded-xl text-xs font-bold">Tutup</button></div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- MOBILE BOTTOM NAVIGATION -->
+  <!-- ========================================================================= -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border-t border-stone-200 dark:border-stone-800 z-40 py-2 px-3">
+    <div class="grid grid-cols-5 gap-1 text-center">
+      <button onclick="switchTab('dashboard')" id="mtab-dashboard" class="mobile-nav-btn py-1 flex flex-col items-center text-stone-400 dark:text-stone-500 active">
+        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1 font-medium">Beranda</span>
+      </button>
+      <button onclick="switchTab('input')" id="mtab-input" class="mobile-nav-btn py-1 flex flex-col items-center text-stone-400 dark:text-stone-500">
+        <div class="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center -mt-2 shadow-sm">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+        </div>
+        <span class="text-[10px] mt-0.5 font-medium">Catat</span>
+      </button>
+      <button onclick="switchTab('history')" id="mtab-history" class="mobile-nav-btn py-1 flex flex-col items-center text-stone-400 dark:text-stone-500">
+        <i data-lucide="receipt-text" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1 font-medium">Riwayat</span>
+      </button>
+      <button onclick="switchTab('refleksi')" id="mtab-refleksi" class="mobile-nav-btn py-1 flex flex-col items-center text-stone-400 dark:text-stone-500">
+        <i data-lucide="feather" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1 font-medium">Refleksi</span>
+      </button>
+      <button onclick="switchTab('config')" id="mtab-config" class="mobile-nav-btn py-1 flex flex-col items-center text-stone-400 dark:text-stone-500">
+        <i data-lucide="sliders" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-1 font-medium">Anggaran</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Script Pengontrol Tema & Inisialisasi Icon -->
+  <script>
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('kakeibo_theme', isDark ? 'dark' : 'light');
+      const metaTheme = document.getElementById('metaThemeColor');
+      if (metaTheme) {
+        metaTheme.setAttribute('content', isDark ? '#141413' : '#FAF9F5');
+      }
+      lucide.createIcons();
+    }
+  </script>
+
+  <!-- Panggil Engine JavaScript Lokal -->
+  <script src="./app.js"></script>
+
+  <!-- Inisialisasi Lucide Icon Pertama Kali -->
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
